@@ -53,6 +53,26 @@
 	capital: false,
 ) = {
 	let target = query(refs.first().target).first()
+	let s = get-supplement(refs)
+	if s == none { return none }
+	if refs.len() > 1 {
+		let singular = s.trim(regex("[.]")) // remove trailing dot if present (e.g. "Fig.")
+		let plural = pluralize(singular)
+		s = s.replace(singular, plural)
+	}
+	if capital {
+		title-case(s)
+	} else {
+		lower(s)
+	}
+}
+
+// get-supplement determines the (simple) supplement for a given
+#let get-supplement(
+	// A reference for which to provide a supplement.
+	ref,
+) = {
+	let target = query(ref.target).first()
 	let supplement = none
 	if target.has("supplement") {
 		if target.supplement.has("text") {
@@ -69,17 +89,37 @@
 		//return [ fields: #target.fields() \ ]
 		panic("unable to get supplement of target '" + str(type(target)) + "'")
 	}
-	let s = supplement
-	if refs.len() > 1 {
-		let singular = s.trim(regex("[.]")) // remove trailing dot if present (e.g. "Fig.")
-		let plural = pluralize(singular)
-		s = s.replace(singular, plural)
+	return supplement
+}
+
+// batch-supplements returns the initial sequence of references with the same
+// supplement.
+#let batch-supplements(
+	// An array of references for which to provide a supplement.
+	refs,
+) = {
+	refs = refs.pos()
+	let output = ()
+	let supplement = none
+	let batch = ()
+	// if supplement == none { return (batch,refs) }
+	while refs.len() > 0 { 
+		let (ref,..refs) = refs
+		supplement = get-supplement(ref)
+		batch.push(ref)
+		let s = none
+		while refs.len() > 0 {
+			ref = refs.first()
+			s = get-supplement(ref)
+			if s == none or supplement != s {
+				break
+			}
+			batch.pop(ref)
+			refs = refs.slice(1)
+		}
+		output.push((supplement,batch))
 	}
-	if capital {
-		title-case(s)
-	} else {
-		lower(s)
-	}
+	return output
 }
 
 // is-consecutive reports whether the given numberings follow one another in
