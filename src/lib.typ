@@ -106,7 +106,7 @@
     batches.push((s, batch))
   }
   // (Optionally) Capitalise and pluralize supplements
-  return batches.map(((s, batch)) => {
+  return batches.enumerate().map((i,(s, batch)) => {
     if s == none {
       return (s, batch)
     }
@@ -115,7 +115,7 @@
       let plural = pluralize(singular)
       s = s.replace(singular, plural)
     }
-    if capital {
+    if capital and i == 0 {
       s = title-case(s)
     } else {
       s = lower(s)
