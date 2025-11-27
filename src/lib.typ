@@ -106,7 +106,7 @@
     batches.push((s, batch))
   }
   // (Optionally) Capitalise and pluralize supplements
-  return batches.enumerate().map((i,(s, batch)) => {
+  return batches.enumerate().map( ((i, (s, batch))) => {
     if s == none {
       return (s, batch)
     }
